@@ -4,7 +4,19 @@ const courseServices = require("../../services/course.services");
 const typeCourseServices = require("../../services/typeCourse.services");
 const categoryServices = require("../../services/category.services");
 const discountServices = require("../../services/discount.services");
-const { Course, Lesson, Topic } = require("../../models/index");
+const {
+  Course,
+  Discount,
+  TypeCourse,
+  Category,
+  Lesson,
+  Topic,
+  LessonVideo,
+  LessonQuiz,
+  LessonDocument,
+  Question,
+  Answer,
+} = require("../../models/index");
 module.exports = {
   getAll: async (req, res) => {
     const response = {};
@@ -25,7 +37,99 @@ module.exports = {
     }
     return res.status(response.status).json(response);
   },
+  getCourseLearningDetail: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user?.id; // ví dụ lấy từ middleware auth
 
+      const course = await Course.findByPk(id, {
+        attributes: ["id", "title", "thumb"],
+        include: [
+          {
+            model: Topic,
+            separate: true,
+            order: [["sort", "ASC"]],
+            include: [
+              {
+                model: Lesson,
+                separate: true,
+                order: [["sort", "ASC"]],
+                include: [
+                  { model: LessonVideo },
+                  { model: LessonDocument },
+                  {
+                    model: LessonQuiz,
+                    include: [
+                      {
+                        model: Question,
+                        include: [Answer],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      if (!course) {
+        return res.status(404).json({ message: "Khoá học không tồn tại" });
+      }
+
+      // Lấy trạng thái học của user từ bảng process
+      let processMap = {};
+      if (userId) {
+        const processList = await Process.findAll({
+          where: { userId, courseId: id },
+        });
+        processList.forEach((item) => {
+          processMap[item.lessonId] = item.status;
+        });
+      }
+
+      // Format response
+      const response = {
+        title: course.title,
+        thumb: course.thumb,
+        progress: 0, // TODO: tính % dựa trên processMap
+        chapters: course.Topics.map((topic) => ({
+          title: topic.title,
+          lessons: topic.Lessons.map((lesson) => ({
+            id: lesson.id,
+            title: lesson.title,
+            duration: lesson.LessonVideo?.time || 0,
+            videoUrl: lesson.LessonVideo?.url || null,
+            document: lesson.LessonDocument?.document || null,
+            quiz: lesson.LessonQuiz
+              ? {
+                  questionCount: lesson.LessonQuiz.Questions?.length || 0,
+                }
+              : null,
+            done: !!processMap[lesson.id],
+          })),
+        })),
+      };
+
+      // Tính progress %
+      const totalLessons = response.chapters.reduce(
+        (sum, chap) => sum + chap.lessons.length,
+        0
+      );
+      const completedLessons = response.chapters.reduce(
+        (sum, chap) => sum + chap.lessons.filter((l) => l.done).length,
+        0
+      );
+      response.progress = totalLessons
+        ? Math.round((completedLessons / totalLessons) * 100)
+        : 0;
+
+      res.json(response);
+    } catch (error) {
+      console.error("Lỗi API getCourseLearningDetail:", error);
+      res.status(500).json({ message: "Lỗi server" });
+    }
+  },
   getCourseDetail: async (req, res) => {
     const { slug } = req.params;
     const response = {};
@@ -64,6 +168,10 @@ module.exports = {
               },
             ],
           },
+        ],
+        order: [
+          [Topic, "sort", "ASC"], // sắp xếp Topic theo sort
+          [Topic, Lesson, "sort", "ASC"], // sắp xếp Lesson theo sort
         ],
       });
 

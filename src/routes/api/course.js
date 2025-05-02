@@ -4,6 +4,7 @@ const courseController = require("../../controllers/api/course.controller");
 router.get("/", courseController.getAll);
 router.get("/:slug", courseController.getCourseDetail);
 router.get("/view/:slug", courseController.getCourseBySlug);
+router.get("/learning/:id", courseController.getCourseLearningDetail);
 router.post("/", courseController.handleAddCourse);
 router.post("/delete/many-course", courseController.handleDeleteManyCourse);
 router.post("/:id", courseController.handleEditCourse);
