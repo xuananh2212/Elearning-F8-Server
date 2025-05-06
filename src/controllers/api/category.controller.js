@@ -8,6 +8,7 @@ const { Category, Course } = require("../../models/index");
 const {
   findAllChildCategories,
 } = require("../../helpers/findAllChildCategories");
+const { QuestionSet } = require("../../models/index");
 const categoryServices = require("../../services/category.services");
 
 module.exports = {
@@ -51,6 +52,25 @@ module.exports = {
         status: "error",
         message: "Server error",
       });
+    }
+  },
+  getCategoriesWithoutQuestionSets: async (req, res) => {
+    try {
+      const categories = await Category.findAll({
+        include: [
+          {
+            model: QuestionSet,
+            required: false,
+          },
+        ],
+      });
+
+      const categoriesWithoutSets = categories;
+
+      res.status(200).json(categoriesWithoutSets);
+    } catch (error) {
+      console.error("Error fetching categories without question sets:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   },
   handleParentCategories: async (req, res) => {

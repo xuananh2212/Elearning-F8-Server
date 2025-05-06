@@ -6,6 +6,10 @@ router.get(
   "/categories-with-courses",
   categoryController.handleCategoryWithCourses
 );
+router.get(
+  "/categories-without-question-sets",
+  categoryController.getCategoriesWithoutQuestionSets
+);
 router.get("/parent-categories", categoryController.handleParentCategories);
 router.post("/", categoryController.addCategory);
 router.post(
