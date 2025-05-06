@@ -1,6 +1,11 @@
 const { object, string } = require("yup");
 const { v4: uuidv4 } = require("uuid");
-const { QuestionSet, Question, Category } = require("../../models/index");
+const {
+  QuestionSet,
+  Question,
+  Category,
+  Answer,
+} = require("../../models/index");
 
 module.exports = {
   getQuestionSetWithQuestions: async (req, res) => {
@@ -12,6 +17,11 @@ module.exports = {
         include: [
           {
             model: Question,
+            include: [
+              {
+                model: Answer,
+              },
+            ],
           },
         ],
       });
