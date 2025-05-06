@@ -59,13 +59,12 @@ module.exports = {
         return res.status(404).json({ message: "Category not found" });
       }
 
-      // Generate UUID for QuestionSet
       const questionSetId = uuidv4();
 
-      // Create question set
+      // Create QuestionSet
       const questionSet = await QuestionSet.create(
         {
-          id: questionSetId, // gắn id tự sinh
+          id: questionSetId,
           title,
           description,
           thumb,
@@ -78,29 +77,53 @@ module.exports = {
         { transaction: t }
       );
 
-      // Create questions
+      // Create Questions + Answers
       if (questions && questions.length > 0) {
-        const questionData = questions.map((q) => ({
-          id: q.id || uuidv4(), // nếu FE không gửi id, tự sinh id
-          question: q.question,
-          explain: q.explain,
-          question_set_id: questionSetId, // gắn id bộ đề mới tạo
-          created_at: new Date(),
-          updated_at: new Date(),
-        }));
+        for (const q of questions) {
+          const questionId = uuidv4();
 
-        await Question.bulkCreate(questionData, { transaction: t });
+          // Create Question
+          await Question.create(
+            {
+              id: questionId,
+              question: q.question,
+              explain: q.explain,
+              question_set_id: questionSetId,
+              created_at: new Date(),
+              updated_at: new Date(),
+            },
+            { transaction: t }
+          );
+
+          // Map correct answer (A-D) → index
+          const correctIndex = ["A", "B", "C", "D"].indexOf(q.correctAnswer);
+
+          // Create Answers
+          const answerData = q.answers.map((ansText, idx) => ({
+            id: uuidv4(),
+            name: ansText,
+            result: idx === correctIndex, // true if correct answer
+            question_id: questionId,
+            created_at: new Date(),
+            updated_at: new Date(),
+          }));
+
+          await Answer.bulkCreate(answerData, { transaction: t });
+        }
       }
 
       await t.commit();
 
       res.status(201).json({
-        message: "Question set and questions created successfully",
+        message: "Question set, questions, and answers created successfully",
         data: { questionSet },
       });
     } catch (error) {
       await t.rollback();
-      console.error("Error creating question set with questions:", error);
+      console.error(
+        "Error creating question set with questions and answers:",
+        error
+      );
       res.status(500).json({ message: "Internal server error" });
     }
   },
