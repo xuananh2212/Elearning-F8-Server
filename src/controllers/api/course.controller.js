@@ -95,19 +95,32 @@ module.exports = {
         progress: 0, // TODO: tính % dựa trên processMap
         chapters: course.Topics.map((topic) => ({
           title: topic.title,
-          lessons: topic.Lessons.map((lesson) => ({
-            id: lesson.id,
-            title: lesson.title,
-            duration: lesson.LessonVideo?.time || 0,
-            videoUrl: lesson.LessonVideo?.url || null,
-            document: lesson.LessonDocument?.document || null,
-            quiz: lesson.LessonQuiz
-              ? {
-                  questionCount: lesson.LessonQuiz.Questions?.length || 0,
-                }
-              : null,
-            done: !!processMap[lesson.id],
-          })),
+          lessons: topic.Lessons.map((lesson) => {
+            console.log(lesson);
+            return {
+              id: lesson.id,
+              title: lesson.title,
+              duration: lesson.LessonVideo?.time || 0,
+              videoUrl: lesson.LessonVideo?.url || null,
+              document: lesson.LessonDocument?.document || null,
+              quiz: lesson.LessonQuiz
+                ? {
+                    id: lesson.LessonQuiz.id,
+                    questions: lesson.LessonQuiz.Questions?.map((q) => ({
+                      id: q.id,
+                      question: q.question,
+                      explain: q.explain,
+                      answers: q.Answers?.map((a) => ({
+                        id: a.id,
+                        name: a.name,
+                        result: a.result,
+                      })),
+                    })),
+                  }
+                : null,
+              done: !!processMap[lesson.id],
+            };
+          }),
         })),
       };
 
