@@ -17,7 +17,7 @@ const questionRouter = require("./api/question");
 const answerRouter = require("./api/answer");
 const discountRouter = require("./api/discount");
 const questionSetRouter = require("./api/questionSet");
-
+const dashboardRouter = require("./api/dashboard");
 router.use("/auth/v1", authRouter);
 router.use("/user/v1", userRouter);
 router.use("/upload/v1", uploadRouter);
@@ -33,4 +33,5 @@ router.use("/question/v1", questionRouter);
 router.use("/answer/v1", answerRouter);
 router.use("/discount/v1", discountRouter);
 router.use("/question-set/v1", questionSetRouter);
+router.use("/dashboard/v1", dashboardRouter);
 module.exports = router;
