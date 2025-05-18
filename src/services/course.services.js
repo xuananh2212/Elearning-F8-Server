@@ -10,6 +10,7 @@ const {
   LessonDocument,
   Question,
   Answer,
+  User,
 } = require("../models/index");
 const { Op } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
@@ -26,6 +27,9 @@ module.exports = {
         },
         {
           model: Discount,
+        },
+        {
+          model: User,
         },
       ],
     });

@@ -2,6 +2,7 @@ const { object, string } = require("yup");
 const { User } = require("../../models");
 const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
+const sendEmail = require("../../utlis/sendEmail");
 
 module.exports = {
   getAllTeachers: async (req, res) => {
@@ -22,17 +23,17 @@ module.exports = {
     try {
       const { name, email, password, address, phone, avatar } = req.body;
 
-      // Kiểm tra email đã tồn tại
+      // Check email tồn tại
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
         return res.status(400).json({ message: "Email đã được sử dụng" });
       }
 
-      // Hash mật khẩu
+      // Hash password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      // Tạo giáo viên mới
+      // Tạo tài khoản giáo viên
       const teacher = await User.create({
         id: uuidv4(),
         name,
@@ -42,6 +43,23 @@ module.exports = {
         phone,
         avatar,
         role: 1,
+      });
+
+      // Gửi email thông báo tài khoản
+      await sendEmail({
+        to: email,
+        subject: "Thông tin tài khoản giáo viên",
+        html: `
+        <p>Chào thầy/cô <strong>${name}</strong>,</p>
+        <p>Hệ thống đã tạo tài khoản cho thầy/cô trên nền tảng E-Learning:</p>
+        <ul>
+          <li><strong>Email:</strong> ${email}</li>
+          <li><strong>Mật khẩu:</strong> ${password}</li>
+        </ul>
+        <p>Vui lòng đăng nhập và đổi mật khẩu ngay sau khi sử dụng lần đầu.</p>
+        <br />
+        <p>Trân trọng,<br />E-Learning Team</p>
+      `,
       });
 
       const { password: pw, ...rest } = teacher.dataValues;

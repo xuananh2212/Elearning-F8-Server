@@ -15,6 +15,7 @@ const {
   LessonQuiz,
   LessonDocument,
   Question,
+  User,
   Answer,
 } = require("../../models/index");
 module.exports = {
@@ -232,13 +233,15 @@ module.exports = {
         }),
         typeCourseId: number().required("vui lòng cho loại khoá học"),
         categoryId: string().required("vui lòng cho danh mục"),
+        teacherId: string().required("vui lòng cho giáo viên"),
       });
       const body = await courseSchema.validate(req.body, { abortEarly: false });
-      let { discountId, categoryId } = body;
+      let { discountId, categoryId, teacherId } = body;
       const typeCourse = await typeCourseServices.findByPkTypeCourse(
         typeCourseId
       );
       const category = await categoryServices.findByPkCategory(categoryId);
+      const teacher = await User.findByPk(teacherId);
       let discount = null;
       if (discountId) {
         discount = await discountServices.findByPkDiscount(discountId);
@@ -258,10 +261,16 @@ module.exports = {
           .status(404)
           .json({ status: 404, message: "category not found" });
       }
+      if (!teacher) {
+        return res
+          .status(404)
+          .json({ status: 404, message: "category not found" });
+      }
       const course = await courseServices.createCourse(body);
       await category?.addCourse(course);
       await typeCourse?.addCourse(course);
       await discount?.addCourse(course);
+      await teacher?.addCourse(course);
       const courseTransformer = new CourseTransformer(course);
       Object.assign(response, {
         status: 201,

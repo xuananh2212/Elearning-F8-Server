@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
       Course.belongsTo(models.TypeCourse, { foreignKey: "type_course_id" });
       Course.hasMany(models.Topic, { foreignKey: "course_id" });
       Course.belongsTo(models.Discount, { foreignKey: "discount_id" });
+      Course.belongsTo(models.User, {
+        foreignKey: "teacher_id",
+      });
     }
   }
   Course.init(
@@ -28,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       amount_learn: DataTypes.INTEGER,
       type_course_id: DataTypes.INTEGER,
       category_id: DataTypes.STRING,
+      teacher_id: DataTypes.STRING, // foreign key từ bảng Users
       slug: {
         type: DataTypes.STRING,
         unique: true,

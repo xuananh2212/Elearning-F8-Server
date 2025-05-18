@@ -5,7 +5,7 @@ module.exports = {
     const response = {};
     try {
       const users = await userSevices.findAllUser();
-      const filteredUsers = users.filter((user) => user.role === 1);
+      const filteredUsers = users.filter((user) => user.role === 0);
       // Xoá password và map ra dataValues
       const userDataValues = filteredUsers.map((user) => {
         const { password, ...rest } = user.dataValues;
