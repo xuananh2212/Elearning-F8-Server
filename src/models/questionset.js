@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
       QuestionSet.belongsTo(models.Category, {
         foreignKey: "category_id",
       });
+      QuestionSet.belongsTo(models.User, {
+        foreignKey: "teacher_id",
+      });
+
       QuestionSet.hasMany(models.Question, { foreignKey: "question_set_id" });
     }
   }
@@ -25,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       category_id: DataTypes.STRING,
       created_at: DataTypes.DATE,
       updated_at: DataTypes.DATE,
+      teacher_id: DataTypes.STRING,
     },
     {
       sequelize,

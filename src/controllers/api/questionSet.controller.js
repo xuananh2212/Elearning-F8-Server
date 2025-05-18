@@ -5,6 +5,7 @@ const {
   Question,
   Category,
   Answer,
+  User,
 } = require("../../models/index");
 
 module.exports = {
@@ -22,6 +23,9 @@ module.exports = {
                 model: Answer,
               },
             ],
+          },
+          {
+            model: User,
           },
         ],
       });
@@ -50,6 +54,7 @@ module.exports = {
         duration,
         totalQuestions,
         categoryId,
+        teacherId,
         questions,
       } = req.body;
 
@@ -57,6 +62,10 @@ module.exports = {
       const category = await Category.findByPk(categoryId);
       if (!category) {
         return res.status(404).json({ message: "Category not found" });
+      }
+      const teacher = await User.findByPk(teacherId);
+      if (!teacher) {
+        return res.status(404).json({ message: "Teacher not found" });
       }
 
       const questionSetId = uuidv4();
@@ -71,6 +80,7 @@ module.exports = {
           duration,
           total_questions: totalQuestions,
           category_id: categoryId,
+          teacher_id: teacherId,
           created_at: new Date(),
           updated_at: new Date(),
         },
@@ -135,6 +145,10 @@ module.exports = {
             model: Category,
             attributes: ["id", "name"],
           },
+          {
+            model: User,
+            attributes: ["id", "name"],
+          },
         ],
         attributes: {
           exclude: ["created_at", "updated_at"],
@@ -159,6 +173,10 @@ module.exports = {
           {
             model: Question,
             attributes: ["id", "question", "explain"],
+          },
+          {
+            model: User,
+            attributes: ["id", "name"],
           },
         ],
         attributes: {
