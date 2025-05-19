@@ -79,10 +79,12 @@ module.exports = {
           }),
         password: string()
           .required("vui lòng nhập password")
-          .matches(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d#$@!%&*?]{8,30}$/,
-            "mật khẩu ít nhất 8 kí tự, có kí tự viết hoa, ký tự đặc biệt và số"
-          )
+          // .matches(
+          //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d#$@!%&*?]{8,30}$/,
+          //   "mật khẩu ít nhất 8 kí tự, có kí tự viết hoa, ký tự đặc biệt và số"
+          // )
+          .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+          .max(30, "Mật khẩu không được vượt quá 30 ký tự")
           .test("matchPassword", "mật khẩu không hợp nhau", (password) => {
             const { passwordRe } = req.body;
             return password === passwordRe;
