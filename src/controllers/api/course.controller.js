@@ -66,6 +66,7 @@ module.exports = {
                         include: [
                           {
                             model: Answer,
+                            separate: true,
                             order: [["sort", "ASC"]], // hoặc theo 'sort' nếu có
                           },
                         ],
