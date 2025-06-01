@@ -19,6 +19,42 @@ const {
   Answer,
 } = require("../../models/index");
 module.exports = {
+  getAllCoursesByTeacher: async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const courses = await Course.findAll({
+        where: { teacher_id: id },
+        include: [
+          {
+            model: TypeCourse,
+          },
+          {
+            model: Category,
+          },
+          {
+            model: Discount,
+          },
+          {
+            model: User,
+          },
+        ],
+      });
+      const coursesTranformer = new CourseTransformer(courses);
+      return res.status(200).json({
+        status: 200,
+        message: "Lấy danh sách khóa học theo giáo viên thành công",
+        courses: coursesTranformer,
+      });
+    } catch (e) {
+      console.error("Lỗi lấy danh sách khóa học:", e);
+      return res.status(500).json({
+        status: 500,
+        message: "Lỗi server",
+        error: e.message,
+      });
+    }
+  },
   getAll: async (req, res) => {
     const response = {};
     try {

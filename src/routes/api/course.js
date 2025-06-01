@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const courseController = require("../../controllers/api/course.controller");
 router.get("/", courseController.getAll);
+router.get("/courses/by-teacher/:id", courseController.getAllCoursesByTeacher);
 router.get("/:slug", courseController.getCourseDetail);
 router.get("/view/:slug", courseController.getCourseBySlug);
 router.get("/learning/:id", courseController.getCourseLearningDetail);
