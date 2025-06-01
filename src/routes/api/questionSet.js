@@ -10,4 +10,6 @@ router.get(
 );
 router.get("/:id", questionSetController.getQuestionSetWithQuestions);
 router.get("/question-sets", questionSetController.getQuestionSets);
+router.delete("/:id", questionSetController.deleteQuestionSet);
+
 module.exports = router;

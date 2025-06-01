@@ -313,4 +313,56 @@ module.exports = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
+  deleteQuestionSet: async (req, res) => {
+    const { id } = req.params;
+
+    const t = await QuestionSet.sequelize.transaction();
+
+    try {
+      const questionSet = await QuestionSet.findByPk(id, {
+        include: {
+          model: Question,
+          include: [
+            {
+              model: Answer,
+              separate: true,
+              order: [["sort", "ASC"]], // optional
+            },
+          ],
+        },
+      });
+
+      if (!questionSet) {
+        return res.status(404).json({ message: "Question set not found" });
+      }
+
+      // Xoá đáp án
+      for (const question of questionSet.Questions) {
+        await Answer.destroy({
+          where: { question_id: question.id },
+          transaction: t,
+        });
+      }
+
+      // Xoá câu hỏi
+      await Question.destroy({
+        where: { question_set_id: id },
+        transaction: t,
+      });
+
+      // Xoá bộ đề
+      await QuestionSet.destroy({
+        where: { id },
+        transaction: t,
+      });
+
+      await t.commit();
+
+      res.status(200).json({ message: "Xóa bộ đề thành công" });
+    } catch (err) {
+      await t.rollback();
+      console.error("Error deleting question set:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
 };
