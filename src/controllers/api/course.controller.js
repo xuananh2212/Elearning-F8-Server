@@ -63,7 +63,12 @@ module.exports = {
                     include: [
                       {
                         model: Question,
-                        include: [Answer],
+                        include: [
+                          {
+                            model: Answer,
+                            order: [["sort", "ASC"]], // hoặc theo 'sort' nếu có
+                          },
+                        ],
                       },
                     ],
                   },
@@ -93,7 +98,7 @@ module.exports = {
       const response = {
         title: course.title,
         thumb: course.thumb,
-        progress: 0, // TODO: tính % dựa trên processMap
+        progress: 0,
         chapters: course.Topics.map((topic) => ({
           title: topic.title,
           lessons: topic.Lessons.map((lesson) => {
@@ -125,7 +130,6 @@ module.exports = {
         })),
       };
 
-      // Tính progress %
       const totalLessons = response.chapters.reduce(
         (sum, chap) => sum + chap.lessons.length,
         0

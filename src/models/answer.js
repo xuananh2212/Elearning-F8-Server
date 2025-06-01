@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       name: DataTypes.STRING,
       result: DataTypes.BOOLEAN,
       question_id: DataTypes.STRING,
+      sort: DataTypes.INTEGER,
     },
     {
       sequelize,

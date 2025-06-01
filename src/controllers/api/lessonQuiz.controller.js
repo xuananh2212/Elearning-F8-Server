@@ -64,10 +64,11 @@ module.exports = {
           updatedAt: new Date(),
         });
 
-        const answersToInsert = q.answers.map((a) => ({
+        const answersToInsert = q.answers.map((a, index) => ({
           id: uuidv4(),
           name: a.name,
           result: a.result,
+          sort: index,
           question_id: questionId,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -87,52 +88,87 @@ module.exports = {
       res.status(500).json({ message: "Lỗi server", error: err.message });
     }
   },
+
   updateQuestionsBatch: async (req, res) => {
     try {
-      const { questions } = req.body;
+      const { lessonQuizId, questions } = req.body;
 
-      if (!Array.isArray(questions)) {
-        return res
-          .status(400)
-          .json({ message: "Danh sách câu hỏi không hợp lệ" });
+      if (!lessonQuizId || !Array.isArray(questions)) {
+        return res.status(400).json({
+          message: "Thiếu lessonQuizId hoặc danh sách câu hỏi không hợp lệ",
+        });
       }
 
       const updatedQuestions = [];
 
-      for (const q of questions) {
-        if (!q.id) continue;
+      for (const [index, q] of questions.entries()) {
+        if (q.id) {
+          // === CẬP NHẬT CÂU HỎI CŨ ===
+          const question = await Question.findByPk(q.id, {
+            include: [
+              {
+                model: Answer,
+                separate: true,
+                order: [["sort", "ASC"]],
+              },
+            ],
+          });
 
-        const question = await Question.findByPk(q.id);
-        if (!question) continue;
+          if (!question) continue;
 
-        // Cập nhật question và explain
-        await question.update({
-          question: q.question,
-          explain: q.explain || "",
-          updatedAt: new Date(),
-        });
+          await question.update({
+            question: q.question,
+            explain: q.explain || "",
+            updated_at: new Date(),
+          });
 
-        if (Array.isArray(q.answers)) {
-          // Xoá hết answer cũ và thêm mới lại (nếu muốn sửa từng cái thì cần thêm logic khác)
-          await Answer.destroy({ where: { question_id: q.id } });
+          if (Array.isArray(q.answers)) {
+            const existingAnswers = [...question.Answers];
 
-          const newAnswers = q.answers.map((a) => ({
+            for (let i = 0; i < q.answers.length; i++) {
+              const a = q.answers[i];
+              const existingAnswer = existingAnswers[i];
+
+              if (existingAnswer) {
+                await existingAnswer.update({
+                  name: a.name,
+                  result: a.result,
+                  updated_at: new Date(),
+                });
+              }
+            }
+          }
+
+          updatedQuestions.push(question);
+        } else {
+          // === THÊM MỚI CÂU HỎI ===
+          const questionId = uuidv4();
+          const newQuestion = await Question.create({
+            id: questionId,
+            question: q.question,
+            explain: q.explain || "",
+            lesson_quiz_id: lessonQuizId,
+            created_at: new Date(),
+            updated_at: new Date(),
+          });
+
+          const answersToInsert = q.answers.map((a) => ({
             id: uuidv4(),
             name: a.name,
             result: a.result,
-            question_id: q.id,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            question_id: questionId,
+            created_at: new Date(),
+            updated_at: new Date(),
           }));
 
-          await Answer.bulkCreate(newAnswers);
-        }
+          await Answer.bulkCreate(answersToInsert);
 
-        updatedQuestions.push(question);
+          updatedQuestions.push(newQuestion);
+        }
       }
 
       res.status(200).json({
-        message: "Cập nhật câu hỏi thành công",
+        message: "Cập nhật/thêm mới câu hỏi thành công",
         data: updatedQuestions,
       });
     } catch (err) {
@@ -140,6 +176,7 @@ module.exports = {
       res.status(500).json({ message: "Lỗi server", error: err.message });
     }
   },
+
   deleteLessonQuiz: async (req, res) => {
     const response = {};
     const { id } = req.params;
