@@ -8,6 +8,10 @@ router.get(
   "/question-sets-with-questions",
   questionSetController.getQuestionSetsWithQuestions
 );
+router.get(
+  "/question-sets-with-questions/teacher/:id",
+  questionSetController.getQuestionSetsWithQuestionsByTeacher
+);
 router.get("/:id", questionSetController.getQuestionSetWithQuestions);
 router.get("/question-sets", questionSetController.getQuestionSets);
 router.delete("/:id", questionSetController.deleteQuestionSet);

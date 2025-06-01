@@ -280,6 +280,42 @@ module.exports = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
+  getQuestionSetsWithQuestionsByTeacher: async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const questionSets = await QuestionSet.findAll({
+        where: { teacher_id: id }, // lọc theo giáo viên
+        include: [
+          {
+            model: Category,
+          },
+          {
+            model: Question,
+            include: [
+              {
+                model: Answer,
+                separate: true,
+                order: [["created_at", "ASC"]], // hoặc 'sort' nếu có
+              },
+            ],
+          },
+          {
+            model: User,
+          },
+        ],
+        attributes: {
+          exclude: ["created_at", "updated_at"],
+        },
+        order: [["created_at", "DESC"]],
+      });
+
+      res.status(200).json(questionSets);
+    } catch (error) {
+      console.error("Error fetching question sets by teacher:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
   getQuestionSetsWithQuestions: async (req, res) => {
     try {
       const questionSets = await QuestionSet.findAll({
