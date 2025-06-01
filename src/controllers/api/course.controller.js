@@ -384,7 +384,6 @@ module.exports = {
         await discountOld?.removeCourse(course);
       } else {
         const discount = await discountServices.findByPkDiscount(discountId);
-        console.log(discount, discountOld, 2333333);
         if (discountOld || discountId) {
           if (discountOld?.id !== discountId) {
             await discountOld?.removeCourse(course);

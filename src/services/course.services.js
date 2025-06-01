@@ -139,7 +139,7 @@ module.exports = {
     });
   },
   updateCourse: async function (id, data) {
-    let { title, desc, thumb, status, price, slug } = data;
+    let { title, desc, thumb, status, price, slug, teacherId } = data;
     slug = getSlug(slug);
     await Course.update(
       {
@@ -149,6 +149,7 @@ module.exports = {
         status,
         price,
         slug,
+        teacher_id: teacherId,
       },
       {
         where: {
