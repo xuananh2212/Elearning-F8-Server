@@ -22,7 +22,7 @@ module.exports = {
               {
                 model: Answer,
                 separate: true,
-                order: ["sort", "ASC"],
+                order: [["sort", "ASC"]],
               },
             ],
           },
