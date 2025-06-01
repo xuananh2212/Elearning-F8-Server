@@ -87,6 +87,59 @@ module.exports = {
       res.status(500).json({ message: "Lỗi server", error: err.message });
     }
   },
+  updateQuestionsBatch: async (req, res) => {
+    try {
+      const { questions } = req.body;
+
+      if (!Array.isArray(questions)) {
+        return res
+          .status(400)
+          .json({ message: "Danh sách câu hỏi không hợp lệ" });
+      }
+
+      const updatedQuestions = [];
+
+      for (const q of questions) {
+        if (!q.id) continue;
+
+        const question = await Question.findByPk(q.id);
+        if (!question) continue;
+
+        // Cập nhật question và explain
+        await question.update({
+          question: q.question,
+          explain: q.explain || "",
+          updatedAt: new Date(),
+        });
+
+        if (Array.isArray(q.answers)) {
+          // Xoá hết answer cũ và thêm mới lại (nếu muốn sửa từng cái thì cần thêm logic khác)
+          await Answer.destroy({ where: { question_id: q.id } });
+
+          const newAnswers = q.answers.map((a) => ({
+            id: uuidv4(),
+            name: a.name,
+            result: a.result,
+            question_id: q.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }));
+
+          await Answer.bulkCreate(newAnswers);
+        }
+
+        updatedQuestions.push(question);
+      }
+
+      res.status(200).json({
+        message: "Cập nhật câu hỏi thành công",
+        data: updatedQuestions,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Lỗi server", error: err.message });
+    }
+  },
   deleteLessonQuiz: async (req, res) => {
     const response = {};
     const { id } = req.params;
