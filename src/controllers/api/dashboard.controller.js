@@ -53,6 +53,39 @@ module.exports = {
       return res.status(500).json({ message: "Internal server error" });
     }
   },
+  getTeacherStatistics: async (req, res) => {
+    const { teacherId } = req.params;
+
+    try {
+      // 1. Tổng số khóa học của giáo viên
+      const totalCourses = await Course.count({
+        where: { teacher_id: teacherId },
+      });
+
+      // 2. Tổng số bộ đề (question sets)
+      const totalQuestionSets = await QuestionSet.count({
+        where: { teacher_id: teacherId },
+      });
+
+      // 3. Tổng số câu hỏi trong các bộ đề của giáo viên
+      const questions = await Question.count({
+        include: [
+          {
+            model: QuestionSet,
+            where: { teacher_id: teacherId },
+          },
+        ],
+      });
+
+      return res.status(200).json({
+        totalCourses,
+        totalQuestionSets,
+        totalQuestions: questions,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Lỗi máy chủ" });
+    }
+  },
   getDashboardChartData: async (req, res) => {
     try {
       const users_by_month = await User.findAll({
