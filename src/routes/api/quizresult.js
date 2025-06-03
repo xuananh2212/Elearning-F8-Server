@@ -63,5 +63,26 @@ router.post("/evaluate", async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
+router.get("/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const results = await QuizResult.findAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: QuestionSet,
+          attributes: ["id", "title"], // hoặc thêm trường khác nếu cần
+        },
+      ],
+      order: [["created_at", "DESC"]],
+    });
+
+    res.status(200).json({ success: true, data: results });
+  } catch (error) {
+    console.error("Error fetching quiz results:", error);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+});
 
 module.exports = router;
