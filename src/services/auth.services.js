@@ -7,11 +7,11 @@ module.exports = {
   verifyToken: (token) => {
     return jwt.verify(token, ACCESS_TOKEN);
   },
-  generateAccessToken: (id) => {
-    return jwt.sign({ id }, ACCESS_TOKEN, { expiresIn: "2h" });
+  generateAccessToken: (data) => {
+    return jwt.sign({ ...data }, ACCESS_TOKEN, { expiresIn: "4h" });
   },
-  generateRefreshToken: (id) => {
-    return jwt.sign({ id }, REFRESH_TOKEN, { expiresIn: "2h" });
+  generateRefreshToken: (data) => {
+    return jwt.sign({ ...data }, REFRESH_TOKEN, { expiresIn: "4h" });
   },
   findBlacklist: async (token) => {
     return await Blacklist.findOne({

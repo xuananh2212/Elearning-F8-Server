@@ -31,8 +31,18 @@ module.exports = {
       } else {
         const result = await bcrypt.compare(body.password, user.password);
         if (result) {
-          const access_token = authServices.generateAccessToken(user?.id);
-          const refresh_token = authServices.generateRefreshToken(user?.id);
+          const access_token = authServices.generateAccessToken({
+            id: user.id,
+            fullname: user.name,
+            email: user.email,
+            avatar: user.avatar,
+          });
+          const refresh_token = authServices.generateRefreshToken({
+            id: user.id,
+            fullname: user.name,
+            email: user.email,
+            avatar: user.avatar,
+          });
           const data = new UserTransformer(user);
           Object.assign(response, {
             status: 200,
