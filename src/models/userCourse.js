@@ -36,6 +36,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: false,
       },
+      order_code: {
+        type: DataTypes.STRING,
+      },
+      payment_status: {
+        type: DataTypes.INTEGER,
+      },
     },
     {
       sequelize,
