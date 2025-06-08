@@ -21,6 +21,9 @@ const teacherRouter = require("./api/teacher");
 const uploadRouterV2 = require("./api/upload-v2");
 const dashboardRouter = require("./api/dashboard");
 const quizResult = require("./api/quizresult");
+const payOSRouter = require("./api/payos");
+const userCourseRouter = require("./api/userCourse");
+
 router.use("/auth/v1", authRouter);
 router.use("/user/v1", userRouter);
 router.use("/upload/v1", uploadRouter);
@@ -40,4 +43,6 @@ router.use("/question-set/v1", questionSetRouter);
 router.use("/teachers/v1", teacherRouter);
 router.use("/quiz-result/v1", quizResult);
 router.use("/dashboard/v1", dashboardRouter);
+router.use("/payos/v1", payOSRouter);
+router.use("/user-course/v1", userCourseRouter);
 module.exports = router;
